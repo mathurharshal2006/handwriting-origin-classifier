@@ -1,32 +1,21 @@
 
-import subprocess
-import threading
-import time
-import os
-
-def run_fastapi():
-    os.system(
-        "uvicorn api:app "
-        "--host 0.0.0.0 --port 8000"
-    )
-
-def run_streamlit():
-    os.system(
-        "streamlit run app.py "
-        "--server.port 8501 "
-        "--server.address 0.0.0.0 "
-        "--server.headless true"
-    )
-
+import os, subprocess
 if __name__ == "__main__":
-    # Start FastAPI in background thread
-    t1 = threading.Thread(target=run_fastapi)
-    t1.daemon = True
-    t1.start()
-    print("FastAPI started on port 8000")
-    
-    time.sleep(3)
-    
-    # Start Streamlit in main thread
-    print("Streamlit starting on port 8501")
-    run_streamlit()
+    port = int(os.environ.get("PORT", 8501))
+    subprocess.run([
+        "streamlit", "run", "app.py",
+        "--server.port", str(port),
+        "--server.address", "0.0.0.0",
+        "--server.headless", "true"
+    ])
+```
+```
+4. Commit changes
+```
+
+---
+```
+After all 3 steps:
+Render auto redeploys!
+Wait 5-7 mins!
+App will work! 🎉
