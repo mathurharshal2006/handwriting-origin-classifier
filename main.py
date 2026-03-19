@@ -8,14 +8,4 @@ if __name__ == "__main__":
         "--server.address", "0.0.0.0",
         "--server.headless", "true"
     ])
-```
-```
-4. Commit changes
-```
 
----
-```
-After all 3 steps:
-Render auto redeploys!
-Wait 5-7 mins!
-App will work! 🎉
