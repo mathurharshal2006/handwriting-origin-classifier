@@ -1,4 +1,7 @@
-tensorflow>=2.10.0
-numpy>=1.23.0
-Pillow>=9.3.0
-streamlit>=1.15.0
+tensorflow-cpu
+numpy
+Pillow
+streamlit
+fastapi
+uvicorn
+python-multipart
