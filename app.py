@@ -4,107 +4,108 @@ from PIL import Image
 import tensorflow as tf
 import os
 
-# Page config
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="Handwriting Origin Identifier",
     page_icon="✍️",
     layout="centered"
 )
 
-# Title
+# ---------------- TITLE ----------------
 st.title("✍️ Handwriting Origin Identifier")
-st.markdown("### Upload a handwriting image to identify its origin!")
+st.markdown("### Identify nationality from English handwriting!")
 st.markdown("---")
 
-# Load model
+# ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    model_path = "model.h5"
+    model_path = "final_model.h5"
     if os.path.exists(model_path):
         return tf.keras.models.load_model(model_path)
     return None
 
 model = load_model()
 
-COUNTRIES = ["🇮🇳 Indian", "🇺🇸 American", "🇨🇳 Chinese", "🇯🇵 Japanese"]
+# ---------------- DATA ----------------
+COUNTRIES = ["Indian", "American", "Chinese", "Japanese"]
+FLAGS     = ["🇮🇳", "🇺🇸", "🇨🇳", "🇯🇵"]
 COLORS    = ["#FF9933", "#3C3B6E", "#DE2910", "#BC002D"]
 
-if model is None:
-    st.error("Model not found! Please check the model file.")
-else:
-    st.success("Model loaded successfully!")
+FACTS = [
+    "Indian handwriting is upright with round uniform letters!",
+    "American handwriting shows right-leaning cursive influence!",
+    "Chinese writers bring brush-stroke precision to English!",
+    "Japanese handwriting is extremely consistent in sizing!"
+]
 
-    # File uploader
-    st.markdown("### Upload Handwriting Image")
+# ---------------- CHECK MODEL ----------------
+if model is None:
+    st.error("❌ Model not found! Make sure 'final_model.h5' is in your repo.")
+else:
+    st.success("✅ AI Model loaded successfully!")
+
+    # ---------------- UPLOAD ----------------
+    st.markdown("### 📸 Upload Handwriting Image")
     uploaded_file = st.file_uploader(
-        "Choose an image...",
+        "Choose a clear handwriting image",
         type=["jpg", "jpeg", "png"]
     )
 
     if uploaded_file is not None:
-        # Show uploaded image
         col1, col2 = st.columns(2)
 
+        # ---------------- SHOW IMAGE ----------------
         with col1:
             st.markdown("#### Your Image")
             image = Image.open(uploaded_file)
-            st.image(image, use_column_width=True)
+            st.image(image, use_container_width=True)
 
-        # Preprocess image
+        # ---------------- PREPROCESS ----------------
         img = image.convert("L")
         img = img.resize((128, 128))
         img_array = np.array(img) / 255.0
         img_array = img_array.reshape(1, 128, 128, 1)
 
-        # Predict
-        with st.spinner("Analyzing handwriting..."):
+        # ---------------- PREDICT ----------------
+        with st.spinner("🔍 Analyzing handwriting..."):
             predictions = model.predict(img_array, verbose=0)
-            pred_class  = np.argmax(predictions[0])
-            confidence  = predictions[0][pred_class] * 100
+            pred_class = np.argmax(predictions[0])
+            confidence = predictions[0][pred_class] * 100
 
+        # ---------------- RESULT ----------------
         with col2:
             st.markdown("#### Result")
             st.markdown(
-                f"<h2 style=color:{COLORS[pred_class]}>"
-                f"{COUNTRIES[pred_class]}</h2>",
+                f"<h1 style='text-align:center'>{FLAGS[pred_class]}</h1>",
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f"<h3 style='text-align:center; color:{COLORS[pred_class]}'>"
+                f"{COUNTRIES[pred_class]} Origin</h3>",
                 unsafe_allow_html=True
             )
             st.metric("Confidence", f"{confidence:.1f}%")
 
-        # Show all probabilities
+        # ---------------- ALL PROBABILITIES ----------------
         st.markdown("---")
-        st.markdown("#### Confidence For Each Country")
+        st.markdown("#### 📊 All Country Scores")
 
-        for i, (country, color) in enumerate(
-                zip(COUNTRIES, COLORS)):
+        for i in range(4):
             prob = predictions[0][i] * 100
-            st.markdown(f"**{country}**")
-            st.progress(int(prob))
-            st.caption(f"{prob:.1f}%")
+            st.progress(
+                int(prob),
+                text=f"{FLAGS[i]} {COUNTRIES[i]} — {prob:.1f}%"
+            )
 
-        # Fun fact
+        # ---------------- FUN FACT ----------------
         st.markdown("---")
-        st.markdown("#### Did You Know?")
-        facts = {
-            0: "Indian handwriting tends to be upright with round, uniform letters influenced by local scripts!",
-            1: "American handwriting often shows a right-leaning slant from cursive writing traditions!",
-            2: "Chinese writers bring brush-stroke precision to their English handwriting!",
-            3: "Japanese handwriting is extremely consistent in size due to disciplined school training!"
-        }
-        st.info(facts[pred_class])
+        st.info(f"💡 {FACTS[pred_class]}")
 
-# Footer
+# ---------------- FOOTER ----------------
 st.markdown("---")
 st.markdown(
-    "Built with TensorFlow & Streamlit | "
-    "Handwriting Origin Classifier Project"
+    "<p style='text-align:center;color:gray'>"
+    "Built by Harshal Mathur | CNN Model | "
+    "Handwriting Origin Classifier</p>",
+    unsafe_allow_html=True
 )
-'''
-
-# Save the app file
-app_path = base_path + '/app.py'
-with open(app_path, 'w') as f:
-    f.write(app_code)
-
-print("Web app file created!")
-print("Location: " + app_path)
