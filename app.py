@@ -18,7 +18,7 @@ st.markdown("---")
 @st.cache_resource
 def load_model():
     interpreter = tf.lite.Interpreter(
-        model_path="model.tflite")
+        model_path="fnal_model.keras")
     interpreter.allocate_tensors()
     return interpreter
 
