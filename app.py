@@ -16,26 +16,20 @@ st.markdown("---")
 
 @st.cache_resource
 def load_model():
-    model_path = "model.h5"
-    if os.path.exists(model_path):
-        return tf.keras.models.load_model(model_path)
-    return None
+    interpreter = tf.lite.Interpreter(
+        model_path="model_fixed.tflite")
+    interpreter.allocate_tensors()
+    return interpreter
 
-
-
-try:
-    interpreter = load_model()
-    st.success("✅ Model loaded successfully!")
-except Exception as e:
-    st.error("Model error: " + str(e))
-    interpreter = None
+interpreter = load_model()
+st.success("✅ Model loaded successfully!")
 
 COUNTRIES = ["🇮🇳 Indian","🇺🇸 American",
              "🇨🇳 Chinese","🇯🇵 Japanese"]
 COLORS    = ["#FF9933","#3C3B6E",
              "#DE2910","#BC002D"]
 
-def predict(image, interpreter):
+def predict(image):
     img = image.convert("L").resize((128,128))
     img_array = np.array(img,
                 dtype=np.float32)/255.0
@@ -48,45 +42,45 @@ def predict(image, interpreter):
     return interpreter.get_tensor(
         out[0]["index"])[0]
 
-if interpreter is not None:
-    st.markdown("### Upload Handwriting Image")
-    uploaded_file = st.file_uploader(
-        "Choose an image...",
-        type=["jpg","jpeg","png"]
-    )
-    if uploaded_file is not None:
-        col1, col2 = st.columns(2)
-        image = Image.open(uploaded_file)
-        with col1:
-            st.markdown("#### Your Image")
-            st.image(image, use_column_width=True)
-        with st.spinner("Analyzing handwriting..."):
-            preds      = predict(image, interpreter)
-            pred_class = np.argmax(preds)
-            confidence = preds[pred_class] * 100
-        with col2:
-            st.markdown("#### Result")
-            st.markdown(
-                f"<h2 style=color:{COLORS[pred_class]}>"
-                f"{COUNTRIES[pred_class]}</h2>",
-                unsafe_allow_html=True)
-            st.metric("Confidence",
-                      f"{confidence:.1f}%")
-        st.markdown("---")
-        st.markdown("#### Confidence For Each Country")
-        for i in range(4):
-            prob = float(preds[i]) * 100
-            st.markdown(f"**{COUNTRIES[i]}**")
-            st.progress(int(prob))
-            st.caption(f"{prob:.1f}%")
-        st.markdown("---")
-        facts = {
-            0: "Indian handwriting tends to be upright with round uniform letters!",
-            1: "American handwriting often shows a right-leaning slant!",
-            2: "Chinese writers bring brush-stroke precision to English!",
-            3: "Japanese handwriting is extremely consistent in size!"
-        }
-        st.info(facts[int(pred_class)])
+st.markdown("### Upload Handwriting Image")
+uploaded_file = st.file_uploader(
+    "Choose an image...",
+    type=["jpg","jpeg","png"]
+)
+
+if uploaded_file is not None:
+    col1, col2 = st.columns(2)
+    image = Image.open(uploaded_file)
+    with col1:
+        st.markdown("#### Your Image")
+        st.image(image, use_column_width=True)
+    with st.spinner("Analyzing handwriting..."):
+        preds      = predict(image)
+        pred_class = int(np.argmax(preds))
+        confidence = preds[pred_class] * 100
+    with col2:
+        st.markdown("#### Result")
+        st.markdown(
+            f"<h2 style=color:{COLORS[pred_class]}>"
+            f"{COUNTRIES[pred_class]}</h2>",
+            unsafe_allow_html=True)
+        st.metric("Confidence",
+                  f"{confidence:.1f}%")
+    st.markdown("---")
+    st.markdown("#### Confidence For Each Country")
+    for i in range(4):
+        prob = float(preds[i]) * 100
+        st.markdown(f"**{COUNTRIES[i]}**")
+        st.progress(int(prob))
+        st.caption(f"{prob:.1f}%")
+    st.markdown("---")
+    facts = {
+        0: "Indian handwriting tends to be upright with round uniform letters!",
+        1: "American handwriting often shows a right-leaning slant!",
+        2: "Chinese writers bring brush-stroke precision to English!",
+        3: "Japanese handwriting is extremely consistent in size!"
+    }
+    st.info(facts[pred_class])
 
 st.markdown("---")
 st.markdown(
