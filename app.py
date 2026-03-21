@@ -16,10 +16,16 @@ st.markdown("---")
 
 @st.cache_resource
 def load_model():
-    interpreter = tf.lite.Interpreter(
-        model_path="model_fixed.tflite")
-    interpreter.allocate_tensors()
-    return interpreter
+    model_path = "model.h5"
+    if os.path.exists(model_path):
+        return tf.keras.models.load_model(model_path)
+    return None
+
+H5 format:
+✅ Works with ALL tensorflow versions
+✅ No TFLite compatibility issues
+✅ Simple to load
+✅ About 26MB (uploadable to GitHub!)
 
 try:
     interpreter = load_model()
