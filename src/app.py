@@ -93,10 +93,3 @@ st.markdown(
     "CNN Model | 70.63% Accuracy | "
     "Beats research (53%)"
 )
-```
-
----
-
-Also check your `main.py` — make sure it says `src/app.py` or just `app.py`:
-```
-Click main.py → show me what's inside!
