@@ -21,11 +21,7 @@ def load_model():
         return tf.keras.models.load_model(model_path)
     return None
 
-H5 format:
-✅ Works with ALL tensorflow versions
-✅ No TFLite compatibility issues
-✅ Simple to load
-✅ About 26MB (uploadable to GitHub!)
+
 
 try:
     interpreter = load_model()
