@@ -19,7 +19,7 @@ st.markdown("---")
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    model_path = "final_model.keras"
+    model_path = "final_model.h5"
     if os.path.exists(model_path):
         return tf.keras.models.load_model(model_path)
     return None
