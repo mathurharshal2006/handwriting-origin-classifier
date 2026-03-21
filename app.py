@@ -19,7 +19,7 @@ st.markdown("---")
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    model_path = "final_model.h5"
+    model_path = "final_model.keras"
     if os.path.exists(model_path):
         return tf.keras.models.load_model(model_path)
     return None
@@ -40,11 +40,10 @@ FACTS = [
 
 # ---------------- CHECK MODEL ----------------
 if model is None:
-    st.error("❌ Model not found! Make sure 'final_model.h5' is in your repo.")
+    st.error("❌ Model not found! Make sure 'final_model.keras' is in repo.")
 else:
     st.success("✅ AI Model loaded successfully!")
 
-    # ---------------- UPLOAD ----------------
     st.markdown("### 📸 Upload Handwriting Image")
     uploaded_file = st.file_uploader(
         "Choose a clear handwriting image",
@@ -54,25 +53,22 @@ else:
     if uploaded_file is not None:
         col1, col2 = st.columns(2)
 
-        # ---------------- SHOW IMAGE ----------------
         with col1:
             st.markdown("#### Your Image")
             image = Image.open(uploaded_file)
             st.image(image, use_container_width=True)
 
-        # ---------------- PREPROCESS ----------------
-        img = image.convert("L")
-        img = img.resize((128, 128))
+        # Preprocess
+        img = image.convert("L").resize((128, 128))
         img_array = np.array(img) / 255.0
         img_array = img_array.reshape(1, 128, 128, 1)
 
-        # ---------------- PREDICT ----------------
-        with st.spinner("🔍 Analyzing handwriting..."):
-            predictions = model.predict(img_array, verbose=0)
-            pred_class = np.argmax(predictions[0])
-            confidence = predictions[0][pred_class] * 100
+        # Predict
+        with st.spinner("🔍 Analyzing..."):
+            preds = model.predict(img_array, verbose=0)
+            pred_class = np.argmax(preds[0])
+            confidence = preds[0][pred_class] * 100
 
-        # ---------------- RESULT ----------------
         with col2:
             st.markdown("#### Result")
             st.markdown(
@@ -80,32 +76,31 @@ else:
                 unsafe_allow_html=True
             )
             st.markdown(
-                f"<h3 style='text-align:center; color:{COLORS[pred_class]}'>"
+                f"<h3 style='text-align:center;color:{COLORS[pred_class]}'>"
                 f"{COUNTRIES[pred_class]} Origin</h3>",
                 unsafe_allow_html=True
             )
             st.metric("Confidence", f"{confidence:.1f}%")
 
-        # ---------------- ALL PROBABILITIES ----------------
+        # All probabilities
         st.markdown("---")
         st.markdown("#### 📊 All Country Scores")
 
         for i in range(4):
-            prob = predictions[0][i] * 100
+            prob = preds[0][i] * 100
             st.progress(
                 int(prob),
                 text=f"{FLAGS[i]} {COUNTRIES[i]} — {prob:.1f}%"
             )
 
-        # ---------------- FUN FACT ----------------
+        # Fun fact
         st.markdown("---")
         st.info(f"💡 {FACTS[pred_class]}")
 
-# ---------------- FOOTER ----------------
+# Footer
 st.markdown("---")
 st.markdown(
     "<p style='text-align:center;color:gray'>"
-    "Built by Harshal Mathur | CNN Model | "
-    "Handwriting Origin Classifier</p>",
+    "Built by Harshal Mathur | CNN Model</p>",
     unsafe_allow_html=True
 )
